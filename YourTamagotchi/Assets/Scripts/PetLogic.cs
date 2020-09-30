@@ -29,23 +29,26 @@ public class PetLogic : MonoBehaviour
     [SerializeField] private int curHealth;
     [Space]
 
+    [Header("Secondary Pet Values")]
+    [SerializeField] private int biasValue;
+    [SerializeField] private int overWeightValue;
+    [SerializeField] private int overFeedValue;
+    [Space]
+
     [Header("Slider Bar Reffrences")]
     public Slider ageSlider;
     public Slider weightSlider;
     public Slider happinessSlider;
     public Slider foodSlider;
     public Slider healthSliderl;
-    [Space]
 
-    [Header("Button Reffrences")]
-    public Button feedPet;
-    public Button playWithPet;
     
 
     private void Start()
     {
         curWeight = curHappiness = curFood = maxValue;
         curAge = 1;
+        overWeightValue = 0;
 
         //Setting all the max values of the sliders, since I am ussing whole numbers instead of floats, the numbers need to be bigger than 1
         //Also if i wish to change the max value then they will all update
@@ -54,16 +57,11 @@ public class PetLogic : MonoBehaviour
         happinessSlider.maxValue = maxValue;
         foodSlider.maxValue = maxValue;
         healthSliderl.maxValue = maxValue;
-
-        weightSlider.value = curWeight;
-        happinessSlider.value = curHappiness;
-        foodSlider.value = curFood;
-        healthSliderl.value = maxValue;
     }
 
     private void FixedUpdate()
     {
-        HealthCalculator();
+        TickTimer();
     }
 
     void TickTimer()
@@ -77,6 +75,7 @@ public class PetLogic : MonoBehaviour
             curTime = 0;
         if(curTime == 0)
         {
+            MainLogic();
             HealthCalculator();
 
             ageSlider.value = curAge;
@@ -97,9 +96,25 @@ public class PetLogic : MonoBehaviour
      */
     void HealthCalculator()
     {
-        curHealth = ((curWeight + curHappiness + curFood) / 3) - curAge / maxAge;
+        biasValue = curAge / maxAge;
+        curHealth = ((curWeight + curHappiness + curFood) / 3) - biasValue;       
 
         Debug.Log(curHealth);
+    }
+
+    void MainLogic()
+    {
+        curHappiness -= biasValue;
+        curFood -= (5 - biasValue);
+
+        //If the pet is overweight it
+        if(overFeedValue >= 8)
+        {
+            curWeight += 5;
+            if (curWeight >= maxValue)
+                overWeightValue += 2;
+            curHappiness -= 2;
+        }
     }
 
     //Function for UI Button to feed the pet
@@ -107,6 +122,12 @@ public class PetLogic : MonoBehaviour
     {
         int petFood = 4;
         curFood += petFood;
+        //What if the player overfeeds the pet
+        if (curFood > maxValue)
+        {
+            curFood = maxValue;
+            overFeedValue += petFood;
+        }
     }
 
     //Function for UI Button to play with the pet
@@ -114,6 +135,12 @@ public class PetLogic : MonoBehaviour
     {
         int happyPlay = 10;
         curHappiness += happyPlay;
+
+        if (overWeightValue > 0)
+            overWeightValue -= 2;
+        if (overFeedValue > 0) ;
+            //Pet Might vomit
+
     }
 
 }
