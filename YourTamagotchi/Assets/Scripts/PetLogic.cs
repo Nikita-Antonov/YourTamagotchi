@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,115 +32,90 @@ public class PetLogic : MonoBehaviour
 
     [Header("Secondary Pet Values")]
     [SerializeField] private int biasValue;
-    [SerializeField] private int overWeightValue;
-    [SerializeField] private int overFeedValue;
-    [Space]
-
-    [Header("Slider Bar Reffrences")]
-    public Slider ageSlider;
-    public Slider weightSlider;
-    public Slider happinessSlider;
-    public Slider foodSlider;
-    public Slider healthSliderl;
-
-    
-
-    private void Start()
-    {
-        curWeight = curHappiness = curFood = maxValue;
-        curAge = 1;
-        overWeightValue = 0;
-
-        //Setting all the max values of the sliders, since I am ussing whole numbers instead of floats, the numbers need to be bigger than 1
-        //Also if i wish to change the max value then they will all update
-        ageSlider.maxValue = maxValue;
-        weightSlider.maxValue = maxValue;
-        happinessSlider.maxValue = maxValue;
-        foodSlider.maxValue = maxValue;
-        healthSliderl.maxValue = maxValue;
-    }
+    [SerializeField] private int overweightValue;       //Overflow Weight Value
+    [SerializeField] private int annoyedValue;          //Overflow Happyness Value
+    [SerializeField] private int maxAnnoyedValue = 5;   //Max Overflow Happyness Value
 
     private void FixedUpdate()
     {
-        TickTimer();
+        HeartBeat();
     }
 
-    void TickTimer()
+    void HeartBeat()
     {
-        float curTime = 10;
-        float maxTime = 10;
+        float curTick = 0;
+        float maxTick = 10;
 
-        if (curTime > 0)
-            curTime -= Time.deltaTime;
-        if (curTime < 0)
-            curTime = 0;
-        if(curTime == 0)
+        if (curTick < 0)
+            curTick -= Time.deltaTime;
+        if (curTick <= 0)
         {
-            MainLogic();
-            HealthCalculator();
+            Logic();
 
-            ageSlider.value = curAge;
-            weightSlider.value = curWeight;
-            happinessSlider.value = curHappiness;
-            foodSlider.value = curFood;
-            healthSliderl.value = maxValue;
+            curTick = maxTick;
 
-            curTime = maxTime;
         }
     }
 
-    /*
-     * This function takes the Weight, Happiness and Food values,
-     * avrages them and takes the age of the pet as a "Bias" to the
-     * overall health of the Pet.
-     * (The older the pet, the more of a health penelty it will sufferr)
-     */
+    void Logic()
+    {
+        Happyness();
+        Food();
+        Weight();
+
+        HealthCalculator();
+    }
+
     void HealthCalculator()
     {
-        biasValue = curAge / maxAge;
-        curHealth = ((curWeight + curHappiness + curFood) / 3) - biasValue;       
-
-        Debug.Log(curHealth);
+        curHealth = ((curWeight + curHappiness + curFood) / 3) - ((curAge - maxAge) / maxAge);
     }
 
-    void MainLogic()
+    //---------------- Happyness ------------------
+
+    void Happyness()
     {
-        curHappiness -= biasValue;
-        curFood -= (5 - biasValue);
 
-        //If the pet is overweight it
-        if(overFeedValue >= 8)
-        {
-            curWeight += 5;
-            if (curWeight >= maxValue)
-                overWeightValue += 2;
-            curHappiness -= 2;
-        }
     }
 
-    //Function for UI Button to feed the pet
-    public void FeedPet()
-    {
-        int petFood = 4;
-        curFood += petFood;
-        //What if the player overfeeds the pet
-        if (curFood > maxValue)
-        {
-            curFood = maxValue;
-            overFeedValue += petFood;
-        }
-    }
-
-    //Function for UI Button to play with the pet
+    //Action
     public void PlayWithPet()
     {
-        int happyPlay = 10;
-        curHappiness += happyPlay;
+        curHappiness += 2;
+    }
 
-        if (overWeightValue > 0)
-            overWeightValue -= 2;
-        if (overFeedValue > 0) ;
-            //Pet Might vomit
+    //---------------- Food ------------------
+
+    void Food()
+    {
+        if (curFood < 0)
+            curFood = 0;
+        if (curFood == 0)
+            curWeight --;
+        if (curFood > 0 && curFood <= 3)
+            curHealth --;
+        //values over 3 and below 7 are normal, as such have no effect
+        if (curFood > 7 && curFood < maxValue)
+            curHealth --;
+        if (curFood > maxValue)
+            curFood = maxValue;
+        if (curFood == maxValue)
+        {
+            curWeight ++;
+            curHappiness --;
+        }
+    }
+
+    //Action
+    public void FeedPet()
+    {
+        curFood += 2;
+    }
+
+    //---------------- Weight ------------------
+
+    void Weight()
+    {
 
     }
 
