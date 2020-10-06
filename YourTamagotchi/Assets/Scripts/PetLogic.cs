@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -75,7 +76,22 @@ public class PetLogic : MonoBehaviour
 
     void Happyness()
     {
+        if (curHappiness < 0)
+            curHappiness = 0;
+        if (curHappiness == 0)
+            curHealth--;
+        if (curHappiness > maxValue)
+            curHappiness = maxValue;
+        if (curHappiness == maxValue)
+            annoyedValue++;
 
+
+        //If the pet becomes annoyed it will become less happy
+
+        if (annoyedValue > maxAnnoyedValue)
+            annoyedValue = maxAnnoyedValue;
+        if (annoyedValue > 0)
+            curHappiness -= annoyedValue;
     }
 
     //Action
